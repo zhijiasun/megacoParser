@@ -54,7 +54,7 @@ OnOffToken                 = ("OnOff"                 / "OO")
 OtherReasonToken           = ("OtherReason"           / "OR")
 OutOfSvcToken              = ("OutOfService"          / "OS")
 PackagesToken              = ("Packages"              / "PG")
-PendingToken               = ("Pending"               / "PN")
+PendingToken = Literal("Pending") | Literal("PN")
 PriorityToken              = ("Priority"              / "PR")
 ProfileToken               = ("Profile"               / "PF")
 ReasonToken                = ("Reason"                / "RE")
@@ -82,7 +82,7 @@ TestToken                  = ("Test"                  / "TE")
 TimeOutToken               = ("TimeOut"               / "TO")
 TopologyToken              = ("Topology"              / "TP")
 TransToken                 = ("Transaction"           / "T")
-ResponseAckToken           = ("TransactionResponseAck" / "K")
+ResponseAckToken = Literal("TransactionResponseAck") |  Literal("K")
 V18Token                   = ("V18")
 V22Token                   = ("V22")
 V22bisToken                = ("V22b")
@@ -99,7 +99,17 @@ RestChar = "; [ ] { } : , # < > ="
 Version = OneOrMore(nums)
 COMMENT = ";" + Word(alphanums+"+ - & ! / \ ? @ ^ ` ~ * $ \( \) \" % \| .")
 domainAddress = "[" + Combine(Word(nums,max=3) + ((".")+Word(nums,max=3))*3) + "]"
-domainName = 
+domainName = "<" + Combine(Word(alphanums)+Word(alphanums+"- .",max=63)) + ">"
 portNumber = Word(nums)
 mId = (domainAddress | domainName)+Optional(":"+portNumber)
 message = MegacopToken + '/' + Version + mId 
+authenticationHeader = AuthToken + "=" + "0x" + Word(hexnums,min=8,exact=8)+"0x"+Word(hexnums,min=8,max=8)+Word(hexnums,min=24,max=64)
+megacoMessage = Optional(authenticationHeader) + message
+
+transactionPending = PendingToken + "=" + Word(nums,max=32) + "{"
+transactionAck = transactionID | (transactionID + "-" + transactionID)
+transactionResponseAck = ResponseAckToken + "{" + transactionAck
+transactionRequest
+
+transactionList = OneOrMore(transactionRequest | transactionReply | transactionPending | transactionResponseAck)
+messageBody = errorDescriptor | transactionList
