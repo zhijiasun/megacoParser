@@ -96,6 +96,10 @@ VersionToken               = ("Version"               / "V")
 
 
 RestChar = "; [ ] { } : , # < > ="
-Version = OneOrMore(pp.nums)
-COMMENT = ";" + pp.Word(pp.alphanums+"+ - & ! / \ ? @ ^ ` ~ * $ \( \) \" % \| .")
-message = MegacopToken + '/' + Version SEP mId SEP
+Version = OneOrMore(nums)
+COMMENT = ";" + Word(alphanums+"+ - & ! / \ ? @ ^ ` ~ * $ \( \) \" % \| .")
+domainAddress = "[" + Combine(Word(nums,max=3) + ((".")+Word(nums,max=3))*3) + "]"
+domainName = 
+portNumber = Word(nums)
+mId = (domainAddress | domainName)+Optional(":"+portNumber)
+message = MegacopToken + '/' + Version + mId 
