@@ -19,41 +19,41 @@ EmergencyToken = ("Emergency") | Literal("EG")
 ErrorToken = Literal("Error") | Literal("ER")
 EventBufferToken = Literal("EventBuffer") | Literal("EB")
 EventsToken = Literal("Events") | Literal("E")
-FailoverToken              = ("Failover"               "FL")
-ForcedToken                = ("Forced"                 "FO")
-GracefulToken              = ("Graceful"               "GR")
-H221Token                  = Literal("H221")
-H223Token                  = Literal("H223")
-H226Token                  = Literal("H226")
-HandOffToken               = ("HandOff"                "HO")
-ImmAckRequiredToken        = ("ImmAckRequired"         "IA")
-InactiveToken              = ("Inactive"               "IN")
-IsolateToken               = ("Isolate"                "IS")
-InSvcToken                 = ("InService"              "IV")
-InterruptByEventToken      = ("IntByEvent"             "IBE")
-KeepActiveToken            = ("KeepActive"             "KA")
-LocalToken                 = ("Local"                  "L")
-LocalControlToken          = ("LocalControl"           "O")
-LockStepToken              = ("LockStep"               "SP")
-LoopbackToken              = ("Loopback"               "LB")
-MediaToken                 = ("Media"                  "M")
+FailoverToken = Literal("Failover") | Literal("FL")
+ForcedToken = Literal("Forced") | Literal("FO")
+GracefulToken = Literal("Graceful") | Literal("GR")
+H221Token = Literal("H221")
+H223Token = Literal("H223")
+H226Token = Literal("H226")
+HandOffToken = Literal("HandOff") | Literal("HO")
+ImmAckRequiredToken = Literal("ImmAckRequired") | Literal("IA")
+InactiveToken = Literal("Inactive") | Literal("IN")
+IsolateToken = Literal("Isolate") | Literal("IS")
+InSvcToken = Literal("InService") | Literal("IV")
+InterruptByEventToken = Literal("IntByEvent") | Literal("IBE")
+KeepActiveToken = Literal("KeepActive") | Literal("KA")
+LocalToken = Literal("Local") | Literal("L")
+LocalControlToken = Literal("LocalControl") | Literal("O")
+LockStepToken = Literal("LockStep") | Literal("SP")
+LoopbackToken = Literal("Loopback") | Literal("LB")
+MediaToken = Literal("Media") | Literal("M")
 MegacopToken = Literal("MEGACO") | Literal("!")
-MethodToken                = ("Method"                 "MT")
-MgcIdToken                 = ("MgcIdToTry"             "MG")
-ModeToken                  = ("Mode"                   "MO")
-ModifyToken                = ("Modify"                 "MF")
-ModemToken                 = ("Modem"                  "MD")
-MoveToken                  = ("Move"                   "MV")
-MTPToken                   = ("MTP")
-MuxToken                   = ("Mux"                    "MX")
-NotifyToken                = ("Notify"                 "N")
-NotifyCompletionToken      = ("NotifyCompletion"       "NC")
-ObservedEventsToken        = ("ObservedEvents"         "OE")
-OnewayToken                = ("Oneway"                 "OW")
-OnOffToken                 = ("OnOff"                  "OO")
-OtherReasonToken           = ("OtherReason"            "OR")
-OutOfSvcToken              = ("OutOfService"           "OS")
-PackagesToken              = ("Packages"               "PG")
+MethodToken = Literal("Method") | Literal("MT")
+MgcIdToken = Literal("MgcIdToTry") | Literal("MG")
+ModeToken = Literal("Mode") | Literal("MO")
+ModifyToken = Literal("Modify") | Literal("MF")
+ModemToken = Literal("Modem") | Literal("MD")
+MoveToken = Literal("Move") | Literal("MV")
+MTPToken = Literal("MTP")
+MuxToken = Literal("Mux") | Literal("MX")
+NotifyToken = Literal("Notify") | Literal("N")
+NotifyCompletionToken = Literal("NotifyCompletion") | Literal("NC")
+ObservedEventsToken   = Literal("ObservedEvents") | Literal("OE")
+OnewayToken           = Literal("Oneway") | Literal("OW")
+OnOffToken            = Literal("OnOff") | Literal("OO")
+OtherReasonToken      = Literal("OtherReason") | Literal("OR")
+OutOfSvcToken         = Literal("OutOfService") | Literal("OS")
+PackagesToken         = Literal("Packages") | Literal("PG")
 PendingToken = Literal("Pending") | Literal("PN")
 PriorityToken = Literal("Priority") | Literal("PR")
 ProfileToken = Literal("Profile") | Literal("PF")
@@ -97,22 +97,29 @@ VersionToken = Literal("Version") | Literal("V")
 
 LBRKT = Literal("{")
 RBRKT = Literal("}")
-LSBRKT = Literl("[")
+LSBRKT = Literal("[")
 RSBRKT = Literal("]")
 EQUAL = Literal("=")
 COLON = Literal(":")
 SLASH = Literal("/")
 COMMA = Literal(",")
+DOT = Literal(".")
+DIGIT = nums
 octetString = printables
 INEQUAL = Literal(">") | Literal("<") | Literal("#")
 RestChar = "; [ ] { } : , # < > ="
+Timer = Word(nums,min=1,max=2)
+Date = Word(nums,min=8,max=8)
+Time = Word(nums,min=8,max=8)
+TimeStamp = Date + "T" + Time
+VALUE = quotedString | Word(alphanums+"+ - & ! / \ ? @ ^ ` ~ * $ \( \) \" % \| .", min=1)
+extensionParameter = Literal("X") + (Literal("-") | Literal("+")) + Word(alphanums,min=1,max=6)
 Version = OneOrMore(nums)
 COMMENT = ";" + Word(alphanums+"+ - & ! / \ ? @ ^ ` ~ * $ \( \) \" % \| .")
 domainAddress = "[" + Combine(Word(nums,max=3) + ((".")+Word(nums,max=3))*3) + "]"
 domainName = "<" + Combine(Word(alphanums)+Word(alphanums+"- .",max=63)) + ">"
 portNumber = Word(nums)
 mId = (domainAddress | domainName)+Optional(":"+portNumber)
-message = MegacopToken + '/' + Version + mId 
 authenticationHeader = AuthToken + "=" + "0x" + Word(hexnums,min=8,exact=8)+"0x"+Word(hexnums,min=8,max=8)+Word(hexnums,min=24,max=64)
 megacoMessage = Optional(authenticationHeader) + message
 
@@ -151,6 +158,8 @@ sigOther = sigParameterName + parmValue
 sigDuration = DurationToken + EQUAL + Word(nums,max=16)
 signalType = OnOffToken | TimeOutToken | BriefToken
 sigSignalType = SignalTypeToken + EQUAL + signalType
+notificationReason = TimeOutToken | InterruptByEventToken | InterruptByNewSignalsDescrToken | OtherReasonToken
+notifyCompletion = NotifyCompletionToken + EQUAL + LBRKT + delimitedList(notificationReason) + RBRKT                                                                                               
 sigParameter = sigStream | sigSignalType | sigDuration | sigOther | notifyCompletion | KeepActiveToken
 signalList = SignalListToken + EQUAL + signalListId + LBRKT + delimitedList(signalListParm) + RBRKT
 signalRequest = signalName + LBRKT + delimitedList(sigParameter) + RBRKT
@@ -160,6 +169,17 @@ signalsDescriptor = SignalsToken + LBRKT + delimitedList(signalParm) + RBRKT
 embedSig = EmbedToken + LBRKT + signalsDescriptor + RBRKT
 eventStream = StreamToken + EQUAL + StreamID
 eventParameterName = NAME
+digitMapLetter = DIGIT # this should change,not complete
+digitLetter = ZeroOrMore((DIGIT + "-" + DIGIT) | digitMapLetter)
+digitMapRange = Literal("X") | (LSBRKT + digitLetter + RSBRKT) 
+digitPosition = digitMapLetter | digitMapRange
+digitStringElement = digitPosition + Optional(DOT)
+digitString = OneOrMore(digitStringElement)
+digitStringList = delimitedList(digitString,delim="|")
+digitMap = digitString | (Literal("(") + digitStringList + ")")
+digitMapValue = Optional(Literal("T") + COLON + Timer + COMMA) + 
+                Optional(Literal("S") + COLON + Timer + COMMA) + 
+                Optional(Literal("L") + COLON + Timer + COMMA) + digitMap
 parmValue = (EQUAL + alternativeValue) | (INEQUAL + VALUE)
 eventOther = eventParameterName + parmValue
 eventDM = DigitMapToken + EQUAL + (digitMapName | (LBRKT + digitMapValue + RBRKT))
@@ -171,6 +191,11 @@ embedNoSig = EmbedToken + LBRKT + embedFirst + RBRKT
 eventParameter = embedWithSig | embedNoSig | KeepActiveToken | eventDM | eventStream | eventOther
 requestedEvent = pkgdName + Optional(LBRKT + delimitedList(eventParameter) + RBRKT)
 eventsDescriptor = EventsToken + Optional(EQUAL + RequestID + delimitedList(requestedEvent) + RBRKT)
+
+digitMapDescriptor = DigitMapToken + EQUAL + ((LBRKT + digitMapValue + RBRKT) | (digitMapName + Optional(LBRKT + digitMapValue + RBRKT)))
+modemType = V32bisToken | V22bisToken | V18Token | V22Token | V32Token | V34Token | V90Token | V91Token | SynchISDNToken | extensionParameter
+modemDescriptor = ModemToken + ((EQUAL + modemType) | (LSBRKT + delimitedList(modemType) + RSBRKT))
+                    + Optional(LBRKT + delimitedList(propertyParm) + RBRKT)
 ammParameter = mediaDescriptor | modemDescriptor | muxDescriptor | eventsDescriptor | signalsDescriptor | digitMapDescriptor | eventBufferDescriptor | auditDescriptor
 ammRequest = (AddToken | MoveToken | ModifyToken ) + "=" + TerminationID + Optional(Literal("{")+delimitedList(ammParameter) + Literal("}"))
 commandRequest = ammRequest | subtractRequest | auditRequest | notifyRequest | serviceChangeRequest
@@ -184,11 +209,38 @@ auditOther = "=" + TerminationID + Optional(Literal("{") + terminationAudit + Li
 contextTerminationAudit = "=" + CtxToken + (terminationIDList | (Literal("{") + errorDescriptor + Literal("}")))
 auditReply = (AuditValueToken | AuditCapToken) + (contextTerminationAudit | auditOther)
 
-auditDescriptor = AuditToken + "{" + Optional(delimitedList(auditItem)) + "}"
+observedEventParameter = eventStream | eventOther
+observedEvent = Optional(TimeStamp + COLON) + pkgdName + Optional(delimitedList(LBRKT + observedEventParameter + RBRKT))
+observedEventsDescriptor = ObservedEventsToken + EQUAL + RequestID + LBRKT + delimitedList(observedEvent) + RBRKT
+
+packagesItem = NAME + Literal("-") + Word(nums,max=16)
+packagesDescriptor = PackagesToken + LBRKT + delimitedList(packagesItem) + RBRKT
+
+statisticsParameter = pkgdName + Optional(EQUAL + VALUE)
+statisticsDescriptor = StatsToken + LBRKT + delimitedList(statisticsParameter) + RBRKT
+
+
+auditItem = MuxToken | ModemToken | MediaToken | SignalsToken | EventBufferToken | DigitMapToken | StatsToken | EventsToken | ObservedEventsToken | PackagesToken
+auditDescriptor = AuditToken + LBRKT + Optional(delimitedList(auditItem)) + RBRKT
 auditReturnParameter = mediaDescriptor | modemDescriptor | muxDescriptor | eventsDescriptor | signalsDescriptor | digitMapDescriptor | observedEventsDescriptor | eventBufferDescriptor | statisticsDescriptor | packagesDescriptor | errorDescriptor | auditItem
 notifyRequest = NotifyToken + "=" + TerminationID + "{" + observedEventsDescriptor + Optional(Literal(",")+errorDescriptor) + "}"
 notifyReply = NotifyToken + "=" + TerminationID + Optional(Literal("{") + errorDescriptor + Literal("}"))
 
+
+serviceChangeMethod = MethodToken + EQUAL + (FailoverToken | ForcedToken | GracefulToken | RestartToken | DisconnectedToken | HandOffToken | extensionParameter)
+serviceChangeReason = ReasonToken + EQUAL + VALUE
+serviceChangeDelay = DelayToken + EQUAL + Word(nums,max=32)
+serviceChangeAddress = ServiceChangeAddressToken + EQUAL + (mId | portNumber)
+serviceChangeMgcId = MgcIdToken + EQUAL + mId
+serviceChangeProfile = ProfileToken + EQUAL + NAME + SLASH + Version
+serviceChangeVersion = VersionToken + EQUAL + Version
+extension = extensionParameter + parmValue
+serviceChangeParm = serviceChangeMethod | serviceChangeReason | serviceChangeDelay | serviceChangeAddress | serviceChangeProfile |
+                    extension | TimeStamp | serviceChangeMgcId | serviceChangeVersion
+serviceChangeDescriptor  = ServicesToken + LBRKT + delimitedList(serviceChangeParm) + RBRKT
+
+servChgReplyParm = serviceChangeAddress | serviceChangeMgcId | serviceChangeProfile | serviceChangeVersion | TimeStamp
+serviceChangeReplyDescriptor = ServicesToken + LBRKT + delimitedList(servChgReplyParm) + RBRKT
 serviceChangeRequest = ServiceChangeToken + "=" + TerminationID + "{" + serviceChangeDescriptor + "}"
 
 quotedString = QuotedString('"')
@@ -209,7 +261,6 @@ mediaDescriptor = MediaToken + LBRKT + delimitedList(mediaParm) + RBRKT
 
 streamModes = SendonlyToken | RecvonlyToken | SendrecvToken | InactiveToken | LoopbackToken
 streamMode = ModeToken + EQUAL + streamModes
-VALUE = quotedString | Word(alphanums+"+ - & ! / \ ? @ ^ ` ~ * $ \( \) \" % \| .", min=1)
 alternativeValue = VALUE | (LSBRKT + delimitedList(VALUE) + RSBRKT) | (LBRKT + delimitedList(VALUE) + RBRKT) | (LSBRKT + VALUE + COLON + VALUE + RSBRKT)
 PackageName = NAME
 ItemID = NAME
@@ -241,12 +292,14 @@ transactionResponseAck = ResponseAckToken + "{" + transactionAck
 transactionRequest = TransToken + "=" + TransactionID + "{" + delimitedList(actionRequest) + "}"
 
 
-actionReply = CtxToken + "=" + ContextID + "{" + ((errorDescriptor | commandReply) | (commandReply + "," + errorDescriptor)) + "}"
+actionReply = CtxToken + EQUAL + ContextID + LBRKT + ((errorDescriptor | commandReply) | (commandReply + COMMA + errorDescriptor)) + RBRKT
 commandReplys = serviceChangeReply | auditReply | ammsReply | notifyReply
 commandReplyList = delimitedList(commandReplys)
-commandReply = commandReplyList | (contextProperties + Optional(Literal(",")+commandReplyList))
+commandReply = commandReplyList | (contextProperties + Optional(COMMA+commandReplyList))
 
 actionReplyList = delimitedList(actionReply)
-transactionReply = 
+transactionReply = ReplyToken + EQUAL + TransactionID + LBRKT + Optional(ImmAckRequiredToken + COMMA) +
+                    (errorDescriptor | actionReplyList) + RBRKT
 transactionList = OneOrMore(transactionRequest | transactionReply | transactionPending | transactionResponseAck)
 messageBody = errorDescriptor | transactionList
+Message = MegacopToken + SLASH + Version + mId + messageBody
