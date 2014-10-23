@@ -17,10 +17,10 @@ if __name__ == "__main__":
     test2 = OneOrMore(domainAddress | exactString)
     
     test3 = exactString | domainAddress + Optional("," + exactString)
-    print test3.parseString("[192.168.0.1]")
 
     test4 = Word(alphanums+"_",max=4)
 
     test5 = ZeroOrMore((Literal("|") | Literal("*")))
-    print test5.parseString("||||****")
 
+    NAME = Word(alphas,min=1,max=1) + Word(alphanums + "_",max=63)
+    print NAME.parseString("a fad1")
