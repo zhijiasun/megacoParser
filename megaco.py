@@ -28,11 +28,6 @@ test5 = """
     a=ptime:20
 }}}}}
 """
-test = """
-    v=0
-    m=audio $ RTP/AVP 18
-    a=silenceSupp:off
-"""
 
 print megacoMessage.parseString(test4)
 test6 = """
