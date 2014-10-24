@@ -120,7 +120,7 @@ SLASH = Literal("/")
 COMMA = Literal(",")
 DOT = Literal(".")
 DIGIT = nums
-octetString = printables
+octetString = Word("}" + srange("[\\0x01-\\0x7c]")) #+ srange("[\\0x7E-\\0xFF]"))
 INEQUAL = Literal(">") | Literal("<") | Literal("#")
 RestChar = "; [ ] { } : , # < > ="
 authenticationHeader = AuthToken + EQUAL + Literal("0x") + Word(hexnums,min=8,exact=8) + COLON +Literal("0x") + Word(hexnums,min=8,max=8) + \
@@ -129,7 +129,7 @@ Timer = Word(nums,min=1,max=2)
 Date = Word(nums,min=8,max=8)
 Time = Word(nums,min=8,max=8)
 TimeStamp = Date + "T" + Time
-VALUE = quotedString | Word(alphanums+"+ - & ! / \ ? @ ^ ` ~ * $ \( \) \" % \| .", min=1)
+VALUE = quotedString | Word(alphanums+"+ - & ! / \ ? @ ^ ` ~ * $ \( \) \" % \| .",min=1)
 extensionParameter = Literal("X") + (Literal("-") | Literal("+")) + Word(alphanums,min=1,max=6)
 Version = Word(nums,min=1,max=2)
 COMMENT = Literal(";") + Word(alphanums+"+ - & ! / \ ? @ ^ ` ~ * $ \( \) \" % \| .")
@@ -147,10 +147,6 @@ digitMapName = NAME
 pathDomainName = Word(alphanums+"*",min=1,max=1) + Word(alphanums+"-",max=63)
 pathNAME = Optional(Literal("*")) + NAME + ZeroOrMore(Literal("|") | Literal("*") | Word(alphanums) | Literal("_") | Literal("$")) + Optional(Literal("@") + pathDomainName)
 TerminationID = Literal("ROOT") | pathNAME | Literal("$") | Literal("*")
-
-
-
-
 
 RequestID = Word(nums,max=32) | Literal("*")
 StreamID = Word(nums,max=16)
@@ -170,11 +166,12 @@ sigSignalType = SignalTypeToken + EQUAL + signalType
 notificationReason = TimeOutToken | InterruptByEventToken | InterruptByNewSignalsDescrToken | OtherReasonToken
 notifyCompletion = NotifyCompletionToken + EQUAL + LBRKT + delimitedList(notificationReason) + RBRKT                                                                                               
 sigParameter = sigStream | sigSignalType | sigDuration | sigOther | notifyCompletion | KeepActiveToken
-signalRequest = signalName + LBRKT + delimitedList(sigParameter) + RBRKT
+signalRequest = signalName + Optional(LBRKT + delimitedList(sigParameter) + RBRKT)
 signalListParm = signalRequest
 signalList = SignalListToken + EQUAL + signalListId + LBRKT + delimitedList(signalListParm) + RBRKT
 signalParm  = signalList | signalRequest
-signalsDescriptor = SignalsToken + LBRKT + delimitedList(signalParm) + RBRKT
+# signalsDescriptor = SignalsToken + Optional(LBRKT + delimitedList(signalParm) + RBRKT)
+signalsDescriptor = SignalsToken + LBRKT + Optional(delimitedList(signalParm)) + RBRKT
 embedSig = EmbedToken + LBRKT + signalsDescriptor + RBRKT
 eventStream = StreamToken + EQUAL + StreamID
 eventParameterName = NAME
@@ -198,7 +195,7 @@ embedWithSig = EmbedToken + LBRKT + signalsDescriptor + Optional(COMMA + embedFi
 embedNoSig = EmbedToken + LBRKT + embedFirst + RBRKT
 eventParameter = embedWithSig | embedNoSig | KeepActiveToken | eventDM | eventStream | eventOther
 requestedEvent = pkgdName + Optional(LBRKT + delimitedList(eventParameter) + RBRKT)
-eventsDescriptor = EventsToken + Optional(EQUAL + RequestID + delimitedList(requestedEvent) + RBRKT)
+eventsDescriptor = EventsToken + Optional(EQUAL + RequestID + LBRKT + delimitedList(requestedEvent) + RBRKT)
 
 digitMapDescriptor = DigitMapToken + EQUAL + ((LBRKT + digitMapValue + RBRKT) | (digitMapName + Optional(LBRKT + digitMapValue + RBRKT)))
 modemType = V32bisToken | V22bisToken | V18Token | V22Token | V32Token | V34Token | V90Token | V91Token | SynchISDNToken | extensionParameter
@@ -214,7 +211,7 @@ streamMode = ModeToken + EQUAL + streamModes
 reservedValueMode = ReservedValueToken + EQUAL + (Literal("ON") | Literal("OFF"))
 reservedGroupMode = ReservedGroupToken + EQUAL + (Literal("ON") | Literal("OFF"))
 
-localParm = streamMode | propertyParm | reservedValueMode | reservedGroupMode 
+localParm = streamMode | propertyParm | reservedValueMode | reservedGroupMode
 localControlDescriptor = LocalControlToken + LBRKT + delimitedList(localParm) + RBRKT
 
 streamParm = localDescriptor | remoteDescriptor | localControlDescriptor
@@ -248,17 +245,17 @@ serviceStatesValue = TestToken | OutOfSvcToken | InSvcToken
 indAudterminationStateParm = pkgdName | propertyParm | ServiceStatesToken | Optional((EQUAL | INEQUAL) + serviceStatesValue) | BufferToken
 indAudterminationStateDescriptor = TerminationStateToken + LBRKT + indAudterminationStateParm + RBRKT
 indAudmediaParm = indAudstreamParm | indAudstreamDescriptor | indAudterminationStateDescriptor
-indAudmediaDescriptor = MediaToken + LBRKT + delimitedList(indAudmediaParm)+ RBRKT
+indAudmediaDescriptor = MediaToken + LBRKT + delimitedList(indAudmediaParm) + RBRKT
 indAudrequestedEvent = pkgdName
 indAudeventsDescriptor = EventsToken + Optional(EQUAL + RequestID) + LBRKT + indAudrequestedEvent + RBRKT
 
 sigRequestID = RequestIDToken + EQUAL + RequestID
-indAudsignalRequestParm  = sigStream | sigRequestID
-indAudsignalRequest  = signalName + Optional(LBRKT + delimitedList(indAudsignalRequestParm) + RBRKT)
+indAudsignalRequestParm = sigStream | sigRequestID
+indAudsignalRequest = signalName + Optional(LBRKT + delimitedList(indAudsignalRequestParm) + RBRKT)
 indAudsignalListParm = indAudsignalRequest
 indAudsignalList = SignalListToken + EQUAL + signalListId + Optional(LBRKT + indAudsignalListParm + RBRKT)
-indAudsignalParm = indAudsignalList | indAudsignalRequest 
-indAudsignalsDescriptor = SignalsToken + LBRKT + Optional(indAudsignalParm) +  RBRKT
+indAudsignalParm = indAudsignalList | indAudsignalRequest
+indAudsignalsDescriptor = SignalsToken + LBRKT + Optional(indAudsignalParm) + RBRKT
 
 indAuddigitMapDescriptor = DigitMapToken + EQUAL + digitMapName
 
@@ -276,12 +273,13 @@ auditItem = auditReturnItem | SignalsToken | EventBufferToken | EventsToken | in
 auditDescriptor = AuditToken + LBRKT + Optional(delimitedList(auditItem)) + RBRKT
 
 ammParameter = mediaDescriptor | modemDescriptor | muxDescriptor | eventsDescriptor | signalsDescriptor | digitMapDescriptor | eventBufferDescriptor | auditDescriptor
-ammRequest = (AddToken | MoveToken | ModifyToken ) + EQUAL + TerminationID + Optional(LBRKT+delimitedList(ammParameter) + RBRKT)
+ammRequest = (AddToken | MoveToken | ModifyToken ) + EQUAL + TerminationID + Optional(LBRKT + delimitedList(ammParameter) + RBRKT)
 auditRequest = (AuditValueToken | AuditCapToken) + EQUAL + TerminationID + LBRKT + auditDescriptor + RBRKT
 subtractRequest = SubtractToken + EQUAL + TerminationID + Optional(LBRKT + auditDescriptor + RBRKT)
 
 observedEventParameter = eventStream | eventOther
-observedEvent = Optional(TimeStamp + COLON) + pkgdName + Optional(delimitedList(LBRKT + observedEventParameter + RBRKT))
+#observedEvent = Optional(TimeStamp + COLON) + pkgdName + Optional(delimitedList(LBRKT + observedEventParameter + RBRKT))
+observedEvent = Optional(TimeStamp + COLON) + pkgdName + Optional(LBRKT + delimitedList(observedEventParameter) + RBRKT)
 observedEventsDescriptor = ObservedEventsToken + EQUAL + RequestID + LBRKT + delimitedList(observedEvent) + RBRKT
 
 quotedString = QuotedString('"')
@@ -319,20 +317,8 @@ auditOther = EQUAL + TerminationID + Optional(LBRKT + terminationAudit + RBRKT)
 contextTerminationAudit = EQUAL + CtxToken + (terminationIDList | (LBRKT + errorDescriptor + RBRKT))
 auditReply = (AuditValueToken | AuditCapToken) + (contextTerminationAudit | auditOther)
 
-
-
 notifyReply = NotifyToken + EQUAL + TerminationID + Optional(LBRKT + errorDescriptor + RBRKT)
-
-
 serviceChangeReply = ServiceChangeToken + EQUAL + TerminationID + Optional(LBRKT + (errorDescriptor | serviceChangeReplyDescriptor) + RBRKT)
-
-
-
-
-
-
-
-
 
 """
 context related definitions
