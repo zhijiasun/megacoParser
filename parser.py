@@ -120,7 +120,10 @@ SLASH = Literal("/")
 COMMA = Literal(",")
 DOT = Literal(".")
 DIGIT = nums
-octetString = Word("}" + srange("[\\0x01-\\0x7c]")) #+ srange("[\\0x7E-\\0xFF]"))
+nonEscapeChar = "}" + srange("[\\0x01-\\0x7c]") #+ srange("[\\0x7E-\\0xFF]")
+nonEscapeChar = srange("[\\0x01-\\0x7c]") #+ srange("[\\0x7E-\\0xFF]")
+octetString = Word(nonEscapeChar)
+# octetString = Word("}" + srange("[\\0x01-\\0x7c]")) #+ srange("[\\0x7E-\\0xFF]"))
 INEQUAL = Literal(">") | Literal("<") | Literal("#")
 RestChar = "; [ ] { } : , # < > ="
 authenticationHeader = AuthToken + EQUAL + Literal("0x") + Word(hexnums,min=8,exact=8) + COLON +Literal("0x") + Word(hexnums,min=8,max=8) + \
@@ -156,8 +159,8 @@ pkgdName = (PackageName + SLASH + ItemID) | (PackageName + SLASH + Literal("*"))
 signalName = pkgdName
 sigStream = StreamToken + EQUAL + StreamID
 sigParameterName = NAME
-alternativeValue = VALUE | (LSBRKT + delimitedList(VALUE) + RSBRKT) | (LBRKT + delimitedList(VALUE) + RBRKT) | (LSBRKT + VALUE + COLON + VALUE + RSBRKT)
-parmValue = (EQUAL + alternativeValue) | (INEQUAL + VALUE)
+alternativeValue = (VALUE | (LSBRKT + delimitedList(VALUE) + RSBRKT) | (LBRKT + delimitedList(VALUE) + RBRKT) | (LSBRKT + VALUE + COLON + VALUE + RSBRKT))
+parmValue = ((EQUAL + alternativeValue) | (INEQUAL + VALUE))
 propertyParm = pkgdName + parmValue
 sigOther = sigParameterName + parmValue
 sigDuration = DurationToken + EQUAL + Word(nums,max=16)
@@ -211,10 +214,10 @@ streamMode = ModeToken + EQUAL + streamModes
 reservedValueMode = ReservedValueToken + EQUAL + (Literal("ON") | Literal("OFF"))
 reservedGroupMode = ReservedGroupToken + EQUAL + (Literal("ON") | Literal("OFF"))
 
-localParm = streamMode | propertyParm | reservedValueMode | reservedGroupMode
+localParm = (streamMode | propertyParm | reservedValueMode | reservedGroupMode)
 localControlDescriptor = LocalControlToken + LBRKT + delimitedList(localParm) + RBRKT
 
-streamParm = localDescriptor | remoteDescriptor | localControlDescriptor
+streamParm = (localDescriptor | remoteDescriptor | localControlDescriptor)
 streamDescriptor = StreamToken + EQUAL + StreamID + LBRKT + delimitedList(streamParm) + RBRKT
 
 serviceStates = ServiceStatesToken + EQUAL + (TestToken | OutOfSvcToken | InSvcToken)
@@ -363,4 +366,16 @@ messageBody = errorDescriptor | transactionList
 message = MegacopToken + SLASH + Version + mId + messageBody
 megacoMessage = Optional(authenticationHeader) + message
 
-
+test3 = """
+MEGACO/1 [30.1.1.107]:2944 Reply=276{Context=7{Modify=AL1,Modify=E65542}}TransactionResponseAck{550365}
+"""
+test5 = """
+!/1 [30.1.1.3]:19032 T=272 {C=$ {A=AL2 {M{O{MO=SR}}}, A=$ {M{O{MO=RC,nt/jit=100},L{
+    v=0
+    c=IN IP4 $
+    m=audio $ RTP/AVP 18
+    a=silenceSupp:off
+    a=ptime:20
+}}}}}
+"""
+print megacoMessage.parseString(test5)

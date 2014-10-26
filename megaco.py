@@ -1,5 +1,4 @@
-from gistfile1 import *
-
+from parser import *
 test1 = """
 MEGACO/1 [30.1.1.107]:2944 Transaction=550363{Context=-{Notify=AL2{ObservedEvents=2{19700108T00294801:al/of}}}}
 """
@@ -29,7 +28,6 @@ test5 = """
 }}}}}
 """
 
-print megacoMessage.parseString(test4)
 test6 = """
 !/1 [192.168.225.205]:10301 T=1422958{C=-{MF=AlcatelSP103001{E=1111{al/of{strict=state}},SG{}}}}
 """
@@ -46,6 +44,7 @@ test8 = """
 T=1422968{
     C=-{MF=root{E=1199{it/ito{mit=2100}}}}}
 """
+print megacoMessage.parseString(test3)
 #print message.parseString(testMessage)
 # print message.parseString(test4)
 # print commandRequestList.parseString("MF=AL1 , MF=E65542 {SG{},M{O{MO=SR,nt/jit=100}}}")
