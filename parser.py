@@ -205,8 +205,8 @@ modemType = V32bisToken | V22bisToken | V18Token | V22Token | V32Token | V34Toke
 modemDescriptor = ModemToken + ((EQUAL + modemType) | (LSBRKT + delimitedList(modemType) + RSBRKT))\
                     + Optional(LBRKT + delimitedList(propertyParm) + RBRKT)
 
-localDescriptor = LocalToken + LBRKT + octetString + RBRKT
-remoteDescriptor = RemoteToken + LBRKT + octetString + RBRKT
+localDescriptor = LocalToken + LBRKT + octetString("sdp_string") + RBRKT
+remoteDescriptor = RemoteToken + LBRKT + octetString("sdp_string") + RBRKT
 
 streamModes = SendonlyToken | RecvonlyToken | SendrecvToken | InactiveToken | LoopbackToken
 streamMode = ModeToken + EQUAL + streamModes
@@ -365,17 +365,3 @@ transactionList = OneOrMore(transactionRequest | transactionReply | transactionP
 messageBody = errorDescriptor | transactionList
 message = MegacopToken + SLASH + Version + mId + messageBody
 megacoMessage = Optional(authenticationHeader) + message
-
-test3 = """
-MEGACO/1 [30.1.1.107]:2944 Reply=276{Context=7{Modify=AL1,Modify=E65542}}TransactionResponseAck{550365}
-"""
-test5 = """
-!/1 [30.1.1.3]:19032 T=272 {C=$ {A=AL2 {M{O{MO=SR}}}, A=$ {M{O{MO=RC,nt/jit=100},L{
-    v=0
-    c=IN IP4 $
-    m=audio $ RTP/AVP 18
-    a=silenceSupp:off
-    a=ptime:20
-}}}}}
-"""
-print megacoMessage.parseString(test5)
