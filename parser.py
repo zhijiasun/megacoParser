@@ -132,6 +132,7 @@ Timer = Word(nums,min=1,max=2)
 Date = Word(nums,min=8,max=8)
 Time = Word(nums,min=8,max=8)
 TimeStamp = Date + "T" + Time
+quotedString = dblQuotedString
 VALUE = quotedString | Word(alphanums+"+ - & ! / \ ? @ ^ ` ~ * $ \( \) \" % \| .",min=1)
 extensionParameter = Literal("X") + (Literal("-") | Literal("+")) + Word(alphanums,min=1,max=6)
 Version = Word(nums,min=1,max=2)
@@ -285,7 +286,6 @@ observedEventParameter = eventStream | eventOther
 observedEvent = Optional(TimeStamp + COLON) + pkgdName + Optional(LBRKT + delimitedList(observedEventParameter) + RBRKT)
 observedEventsDescriptor = ObservedEventsToken + EQUAL + RequestID + LBRKT + delimitedList(observedEvent) + RBRKT
 
-quotedString = QuotedString('"')
 ErrorCode = Word(nums,min=1,max=4)
 errorDescriptor = ErrorToken + EQUAL + ErrorCode + LBRKT + Optional(quotedString) + RBRKT
 
@@ -354,13 +354,12 @@ transactionRequest = TransToken + EQUAL + TransactionID + LBRKT + delimitedList(
 commandReplys = serviceChangeReply | auditReply | ammsReply | notifyReply
 commandReplyList = delimitedList(commandReplys)
 commandReply = commandReplyList | (contextProperties + Optional(COMMA+commandReplyList))
-actionReply = CtxToken + EQUAL + ContextID + LBRKT + ((errorDescriptor | commandReply) | (commandReply + COMMA + errorDescriptor)) + RBRKT
+actionReply = CtxToken + EQUAL + ContextID + LBRKT + (errorDescriptor | commandReply | (commandReply + COMMA + errorDescriptor)) + RBRKT
 
 actionReplyList = delimitedList(actionReply)
 segmentNumber = Word(nums,max=16)
 segmentReply = MessageSegmentToken + EQUAL + TransactionID + SLASH + segmentNumber + Optional(SLASH  + SegmentationCompleteToken)
-transactionReply = ReplyToken + EQUAL + TransactionID + Optional(SLASH +segmentNumber + Optional(SLASH + SegmentationCompleteToken)) + LBRKT + Optional(ImmAckRequiredToken + COMMA) + \
-                    (errorDescriptor | actionReplyList) + RBRKT
+transactionReply = ReplyToken + EQUAL + TransactionID + Optional(SLASH +segmentNumber + Optional(SLASH + SegmentationCompleteToken)) + LBRKT + Optional(ImmAckRequiredToken + COMMA) + (errorDescriptor | actionReplyList) + RBRKT
 transactionList = OneOrMore(transactionRequest | transactionReply | transactionPending | transactionResponseAck)
 messageBody = errorDescriptor | transactionList
 message = MegacopToken + SLASH + Version + mId + messageBody

@@ -135,15 +135,15 @@ media_description_line = Group(media_description_line_prefix + media_type("MEDIA
 
 # ---- Session section ----
 session_section = version_line(SdpTerms.VERSION_LINE) + \
-                  originator_line(SdpTerms.ORIGINATOR_LINE) + \
-                  session_name_line(SdpTerms.SESSION_NAME_LINE) + \
+                  Optional(originator_line(SdpTerms.ORIGINATOR_LINE)) + \
+                  Optional(session_name_line(SdpTerms.SESSION_NAME_LINE)) + \
                   Optional(session_information_line(SdpTerms.SESSION_INFORMATION_LINE)) + \
                   Optional(uri_line(SdpTerms.URI_LINE)) + \
                   Optional(email_address_line(SdpTerms.EMAIL_ADDRESS_LINE)) + \
                   Optional(phone_number_line(SdpTerms.PHONE_NUMBER_LINE)) + \
                   Optional(connection_information_line(SdpTerms.CONNECTION_INFORMATION_LINE)) + \
                   ZeroOrMore(bandwidth_information_line.setResultsName(SdpTerms.BANDWIDTH_INFORMATION_LINES, listAllMatches=True)) + \
-                  OneOrMore(time_description_line.setResultsName(SdpTerms.TIME_DESCRIPTION_LINES, listAllMatches=True)) + \
+                  ZeroOrMore(time_description_line.setResultsName(SdpTerms.TIME_DESCRIPTION_LINES, listAllMatches=True)) + \
                   ZeroOrMore(application_line.setResultsName(SdpTerms.APPLICATION_LINES, listAllMatches=True))
 
 # ---- Media section ----

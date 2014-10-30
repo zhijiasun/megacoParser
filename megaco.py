@@ -46,7 +46,7 @@ T=1422968{
     C=-{MF=root{E=1199{it/ito{mit=2100}}}}}
 """
 res =  megacoMessage.parseString(test5)
-print res.sdp_string
+s = Sdp(res.sdp_string)
 #print message.parseString(testMessage)
 # print message.parseString(test4)
 # print commandRequestList.parseString("MF=AL1 , MF=E65542 {SG{},M{O{MO=SR,nt/jit=100}}}")

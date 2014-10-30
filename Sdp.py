@@ -210,8 +210,10 @@ class Sdp:
     fields = [SdpTerms.SESSION_SECTION, SdpTerms.MEDIA_SECTIONS]
     def __init__(self, sdp_string):
         res = grammar.sdp.parseString(sdp_string)
-        for field in Sdp.fields:
-            setattr(self, field.lower(), SdpObjectMapping[field](res[field]))
+        print res
+        print '####'
+        # for field in Sdp.fields:
+        #     setattr(self, field.lower(), SdpObjectMapping[field](res[field]))
 
     @property
     def audio(self):

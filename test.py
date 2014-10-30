@@ -1,4 +1,6 @@
 from pyparsing import *
+from parser import *
+import os
 import unittest
 
 
@@ -7,20 +9,40 @@ class BasicTest(unittest.TestCase):
         pass
 
 
+
+messageTime = []
+message = []
+def read_wireshark(filepath):
+    megaco_file = open(filepath)
+    content = megaco_file.read()
+    s = content.split("\n\n")
+    for i in range(len(s)):
+        c = []
+        if i % 2 is 0:
+            line = s[i].split("\n")
+            # print k[1].split()[1]
+            t = line[1].split()[1]
+            messageTime.append(t)
+        else:
+            line = s[i].split("-------------- (RAW text output) ---------------\n")
+            msg = line[1]
+            message.append(msg)
+
+
+
 if __name__ == "__main__":
-    domainAddress = "[" + Combine(Word(nums,max=3) + ((".")+Word(nums,max=3))*3) + "]"
-
-    exactString = Word(hexnums,max=8,exact=8)
-
-    test = domainAddress | exactString
-
-    test2 = OneOrMore(domainAddress | exactString)
-    
-    test3 = exactString | domainAddress + Optional("," + exactString)
-
-    test4 = Word(alphanums+"_",max=4)
-
-    test5 = ZeroOrMore((Literal("|") | Literal("*")))
-
-    NAME = Word(alphas,min=1,max=1) + Word(alphanums + "_",max=63)
-    print NAME.parseString("a fad1")
+    test = """MEGACO/1 [20.8.1.204]:2944 Reply=39991317{Context=-{Modify=AL1{Error=430{}}}}"""
+    test2 = """
+    Context=-{Modify=AL1{Error=430{}}}
+    """
+    print actionReply.parseString(test2)
+    # print megacoMessage.parseString(test)
+    # read_wireshark("megacoString.txt")
+    # for m in message:
+        # try:
+        #     print megacoMessage.parseString(m)
+        # except Exception as e:
+        #     print "*************************"
+        #     print m
+        #     print "*************************"
+        #     print "parse error",e
