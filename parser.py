@@ -181,7 +181,7 @@ eventStream = StreamToken + EQUAL + StreamID
 eventParameterName = NAME
 digitMapLetter = DIGIT # this should change,not complete
 digitLetter = ZeroOrMore((DIGIT + Literal("-") + DIGIT) | digitMapLetter)
-digitMapRange = Literal("X") | (LSBRKT + digitLetter + RSBRKT) 
+digitMapRange = Literal("x") | (LSBRKT + digitLetter + RSBRKT) 
 digitPosition = digitMapLetter | digitMapRange
 digitStringElement = digitPosition + Optional(DOT)
 digitString = OneOrMore(digitStringElement)
@@ -191,7 +191,7 @@ digitMapValue = Optional(Literal("T") + COLON + Timer + COMMA) + \
                 Optional(Literal("S") + COLON + Timer + COMMA) + \
                 Optional(Literal("L") + COLON + Timer + COMMA) + digitMap
 eventOther = eventParameterName + parmValue
-eventDM = DigitMapToken + EQUAL + (digitMapName | (LBRKT + digitMapValue + RBRKT))
+eventDM = DigitMapToken + EQUAL + ((digitMapName) | (LBRKT + digitMapValue + RBRKT))
 secondEventParameter = embedSig | KeepActiveToken | eventDM | eventStream | eventOther
 secondRequestedEvent = pkgdName + Optional(LBRKT + delimitedList(secondEventParameter) + RBRKT)
 embedFirst = EventsToken + Optional(EQUAL + RequestID + LBRKT + delimitedList(secondRequestedEvent) + RBRKT)
@@ -312,7 +312,7 @@ commandRequestList = delimitedList(Optional(Literal("O-")) + Optional(Literal("W
 packagesDescriptor = PackagesToken + LBRKT + delimitedList(packagesItem) + RBRKT
 statisticsParameter = pkgdName + Optional((EQUAL + VALUE) | (LSBRKT + delimitedList(VALUE) + RSBRKT))
 statisticsDescriptor = StatsToken + LBRKT + delimitedList(statisticsParameter) + RBRKT
-auditReturnParameter = mediaDescriptor | modemDescriptor | muxDescriptor | eventsDescriptor | signalsDescriptor | digitMapDescriptor | observedEventsDescriptor | eventBufferDescriptor | statisticsDescriptor | packagesDescriptor | errorDescriptor | auditReturnItem
+auditReturnParameter = mediaDescriptor | modemDescriptor | muxDescriptor | errorDescriptor | eventsDescriptor | signalsDescriptor | digitMapDescriptor | observedEventsDescriptor | eventBufferDescriptor | statisticsDescriptor | packagesDescriptor | auditReturnItem
 terminationAudit = delimitedList(auditReturnParameter)
 ammsReply = (AddToken | MoveToken | ModifyToken | SubtractToken) + EQUAL + TerminationID + Optional(LBRKT + terminationAudit + RBRKT)
 

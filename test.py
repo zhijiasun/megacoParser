@@ -33,16 +33,19 @@ def read_wireshark(filepath):
 if __name__ == "__main__":
     test = """MEGACO/1 [20.8.1.204]:2944 Reply=39991317{Context=-{Modify=AL1{Error=430{}}}}"""
     test2 = """
-    Context=-{Modify=AL1{Error=430{}}}
+    Context=-{Modify=AL1{Error=430{"fadf"}}}
     """
-    print actionReply.parseString(test2)
+    # print actionReply.parseString(test2)
     # print megacoMessage.parseString(test)
-    # read_wireshark("megacoString.txt")
-    # for m in message:
-        # try:
-        #     print megacoMessage.parseString(m)
-        # except Exception as e:
-        #     print "*************************"
-        #     print m
-        #     print "*************************"
-        #     print "parse error",e
+    read_wireshark("megacoString.txt")
+    for m in message:
+        if m.find("truncated") is not -1:
+            print "message is truncated,not parse!!!"
+            continue
+        try:
+            print megacoMessage.parseString(m)
+        except Exception as e:
+            print "*************************"
+            print m
+            print "*************************"
+            print "parse error",e
