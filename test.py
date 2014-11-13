@@ -1,7 +1,18 @@
 from pyparsing import *
 from parser import *
+from megaco import *
 import os
 import unittest
+
+
+def pytest():
+    w = Word(alphas)("test")
+    n = Word(nums)("nums")
+    r = delimitedList((w+n)("ll"),)("r")
+    s = "a1,b2"
+    result = r.parseString(s)
+    print result
+
 
 
 class BasicTest(unittest.TestCase):
@@ -9,9 +20,10 @@ class BasicTest(unittest.TestCase):
         pass
 
 
-
 messageTime = []
 message = []
+
+
 def read_wireshark(filepath):
     megaco_file = open(filepath)
     content = megaco_file.read()
@@ -29,14 +41,7 @@ def read_wireshark(filepath):
             message.append(msg)
 
 
-
-if __name__ == "__main__":
-    test = """MEGACO/1 [20.8.1.204]:2944 Reply=39991317{Context=-{Modify=AL1{Error=430{}}}}"""
-    test2 = """
-    Context=-{Modify=AL1{Error=430{"fadf"}}}
-    """
-    # print actionReply.parseString(test2)
-    # print megacoMessage.parseString(test)
+def parse_file():
     read_wireshark("megacoString.txt")
     for m in message:
         if m.find("truncated") is not -1:
@@ -45,7 +50,18 @@ if __name__ == "__main__":
         try:
             print megacoMessage.parseString(m)
         except Exception as e:
-            print "*************************"
-            print m
-            print "*************************"
-            print "parse error",e
+            print "parse error", e
+
+
+if __name__ == "__main__":
+    test = """MEGACO/1 [20.8.1.204]:2944 Reply=39991317{Context=-{Modify=AL1{Error=430{}}}}"""
+    test2 = """
+    !/1 [10.0.55.41] T=40000572{C=-{O-AV=A1{AT{M }},O-AV=A2{AT{M }}},C=*{O-AV=A1{AT{M }},O-AV=A2{AT{M }}}}
+    """
+    # print actionReply.parseString(test2)
+    result =  megacoMessage.parseString(test2)
+    print result.keys()
+    print result
+    # print result['version'],result['ip'],result['port'],result['replyId'],result['contextId']
+
+    # pytest()

@@ -137,9 +137,9 @@ VALUE = quotedString | Word(alphanums+"+ - & ! / \ ? @ ^ ` ~ * $ \( \) \" % \| .
 extensionParameter = Literal("X") + (Literal("-") | Literal("+")) + Word(alphanums,min=1,max=6)
 Version = Word(nums,min=1,max=2)
 COMMENT = Literal(";") + Word(alphanums+"+ - & ! / \ ? @ ^ ` ~ * $ \( \) \" % \| .")
-domainAddress = Literal("[") + Combine(Word(nums,max=3) + (Literal(".")+Word(nums,max=3))*3) + Literal("]")
+domainAddress = Suppress(Literal("[")) + Combine(Word(nums,max=3) + (Literal(".")+Word(nums,max=3))*3)("ip") + Suppress(Literal("]"))
 domainName = Literal("<") + Combine(Word(alphanums)+Word(alphanums+"- .",max=63)) + Literal(">")
-portNumber = Word(nums)
+portNumber = Word(nums)("port")
 mId = (domainAddress | domainName)+Optional(":"+portNumber)
 
 TransactionID = Word(nums, max=32)
@@ -307,7 +307,7 @@ serviceChangeRequest = ServiceChangeToken + EQUAL + TerminationID + LBRKT + serv
 
 notifyRequest = NotifyToken + EQUAL + TerminationID + LBRKT + observedEventsDescriptor + Optional(Literal(",")+errorDescriptor) + RBRKT
 commandRequest = ammRequest | subtractRequest | auditRequest | notifyRequest | serviceChangeRequest
-commandRequestList = delimitedList(Optional(Literal("O-")) + Optional(Literal("W-")) + commandRequest)
+commandRequestList = delimitedList(Optional(Literal("O-")) + Optional(Literal("W-")) + commandRequest)("commandRequestList")
 
 packagesDescriptor = PackagesToken + LBRKT + delimitedList(packagesItem) + RBRKT
 statisticsParameter = pkgdName + Optional((EQUAL + VALUE) | (LSBRKT + delimitedList(VALUE) + RSBRKT))
@@ -343,24 +343,24 @@ indAudcontextAttrDescriptor = ContextAttrToken + LBRKT + delimitedList(contextAu
 
 contextAudit = ContextAuditToken + LBRKT + (delimitedList(contextAuditProperties) | indAudcontextAttrDescriptor ) + RBRKT
 contextRequest = contextAudit | (contextProperties + Optional(Literal(",") + contextAudit))
-actionRequest = CtxToken + EQUAL + ContextID + LBRKT + ((contextRequest + Optional(Literal(",") + commandRequestList)) | commandRequestList) + RBRKT
+actionRequest = Group((CtxToken + EQUAL + ContextID("contextId") + LBRKT + ((contextRequest + Optional(Literal(",") + commandRequestList)) | commandRequestList) + RBRKT))
 
 transactionPending = PendingToken + EQUAL + TransactionID + LBRKT + RBRKT
 transactionAck = TransactionID | (TransactionID + Literal("-") + TransactionID)
 transactionResponseAck = ResponseAckToken + LBRKT + delimitedList(transactionAck) + RBRKT
-transactionRequest = TransToken + EQUAL + TransactionID + LBRKT + delimitedList(actionRequest) + RBRKT
+transactionRequest = (TransToken + EQUAL + TransactionID("requestId") + LBRKT + delimitedList(actionRequest) + RBRKT)("transactionRequest")
 
 
 commandReplys = serviceChangeReply | auditReply | ammsReply | notifyReply
 commandReplyList = delimitedList(commandReplys)
 commandReply = commandReplyList | (contextProperties + Optional(COMMA+commandReplyList))
-actionReply = CtxToken + EQUAL + ContextID + LBRKT + (errorDescriptor | commandReply | (commandReply + COMMA + errorDescriptor)) + RBRKT
+actionReply = CtxToken + EQUAL + ContextID("contextId") + LBRKT + (errorDescriptor | commandReply | (commandReply + COMMA + errorDescriptor)) + RBRKT
 
 actionReplyList = delimitedList(actionReply)
 segmentNumber = Word(nums,max=16)
 segmentReply = MessageSegmentToken + EQUAL + TransactionID + SLASH + segmentNumber + Optional(SLASH  + SegmentationCompleteToken)
-transactionReply = ReplyToken + EQUAL + TransactionID + Optional(SLASH +segmentNumber + Optional(SLASH + SegmentationCompleteToken)) + LBRKT + Optional(ImmAckRequiredToken + COMMA) + (errorDescriptor | actionReplyList) + RBRKT
-transactionList = OneOrMore(transactionRequest | transactionReply | transactionPending | transactionResponseAck)
+transactionReply = ReplyToken + EQUAL + TransactionID("replyId") + Optional(SLASH +segmentNumber + Optional(SLASH + SegmentationCompleteToken)) + LBRKT + Optional(ImmAckRequiredToken + COMMA) + (errorDescriptor | actionReplyList) + RBRKT
+transactionList = OneOrMore(transactionRequest | transactionReply | transactionPending | transactionResponseAck)("transactionList")
 messageBody = errorDescriptor | transactionList
-message = MegacopToken + SLASH + Version + mId + messageBody
+message = MegacopToken + SLASH + (Version)("version") + mId + messageBody
 megacoMessage = Optional(authenticationHeader) + message
