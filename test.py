@@ -1,6 +1,7 @@
 from pyparsing import *
 from parser import *
 from megaco import *
+from actions import *
 import os
 import unittest
 
@@ -22,6 +23,8 @@ class BasicTest(unittest.TestCase):
 
 messageTime = []
 message = []
+
+commandRequestLength = 0
 
 
 def read_wireshark(filepath):
@@ -53,6 +56,11 @@ def parse_file():
             print "parse error", e
 
 
+transactionListNum = 0
+actionRequestNum = 0
+commandRequestListNum = 0
+
+
 if __name__ == "__main__":
     test = """MEGACO/1 [20.8.1.204]:2944 Reply=39991317{Context=-{Modify=AL1{Error=430{}}}}"""
     test2 = """
@@ -60,8 +68,16 @@ if __name__ == "__main__":
     """
     # print actionReply.parseString(test2)
     result =  megacoMessage.parseString(test2)
-    print result.keys()
-    print result
-    # print result['version'],result['ip'],result['port'],result['replyId'],result['contextId']
+    transactionListNum = len(result["transactionList"])
+    actionRequestNum = len(result["actionRequest"])
+    commandRequestListNum = len(result["commandRequestList"])
+    print transactionListNum,actionRequestNum,commandRequestListNum
+    print transactionList
+
+    # for i in range(transactionListNum):
+    #     transactionList_temp = result["transactionList"][i]
+    #     for i in len(actionRequestNum):
+    #         actionRequest_temp = transactionList_temp["actionRequest"]
+
 
     # pytest()

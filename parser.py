@@ -1,4 +1,5 @@
 from pyparsing import *
+from actions import *
 
 AddToken = Literal("Add") | Literal("A")
 AndAUDITselectToken = Literal("ANDLgc")
@@ -142,15 +143,15 @@ domainName = Literal("<") + Combine(Word(alphanums)+Word(alphanums+"- .",max=63)
 portNumber = Word(nums)("port")
 mId = (domainAddress | domainName)+Optional(":"+portNumber)
 
-TransactionID = Word(nums, max=32)
-ContextID = Word(nums, max=32) | Literal("*") | Literal("-") | Literal("$")
+TransactionID = (Word(nums, max=32))("transactionID")
+ContextID = (Word(nums, max=32) | Literal("*") | Literal("-") | Literal("$"))("ContextID")
 NAME = Word(alphanums + "_",max=64) # how to confirm the first character is an alphas ???
 PackageName = NAME
 ItemID = NAME
 digitMapName = NAME
 pathDomainName = Word(alphanums+"*",min=1,max=1) + Word(alphanums+"-",max=63)
 pathNAME = Optional(Literal("*")) + NAME + ZeroOrMore(Literal("|") | Literal("*") | Word(alphanums) | Literal("_") | Literal("$")) + Optional(Literal("@") + pathDomainName)
-TerminationID = Literal("ROOT") | pathNAME | Literal("$") | Literal("*")
+TerminationID = (Literal("ROOT") | pathNAME | Literal("$") | Literal("*"))("termID")
 
 RequestID = Word(nums,max=32) | Literal("*")
 StreamID = Word(nums,max=16)
@@ -277,8 +278,8 @@ auditItem = auditReturnItem | SignalsToken | EventBufferToken | EventsToken | in
 auditDescriptor = AuditToken + LBRKT + Optional(delimitedList(auditItem)) + RBRKT
 
 ammParameter = mediaDescriptor | modemDescriptor | muxDescriptor | eventsDescriptor | signalsDescriptor | digitMapDescriptor | eventBufferDescriptor | auditDescriptor
-ammRequest = (AddToken | MoveToken | ModifyToken ) + EQUAL + TerminationID + Optional(LBRKT + delimitedList(ammParameter) + RBRKT)
-auditRequest = (AuditValueToken | AuditCapToken) + EQUAL + TerminationID + LBRKT + auditDescriptor + RBRKT
+ammRequest = (AddToken | MoveToken | ModifyToken )("commandType") + EQUAL + TerminationID + Optional(LBRKT + delimitedList(ammParameter) + RBRKT)
+auditRequest = (AuditValueToken | AuditCapToken)("commandType") + EQUAL + TerminationID + LBRKT + auditDescriptor + RBRKT
 subtractRequest = SubtractToken + EQUAL + TerminationID + Optional(LBRKT + auditDescriptor + RBRKT)
 
 observedEventParameter = eventStream | eventOther
@@ -306,8 +307,8 @@ serviceChangeDescriptor  = ServicesToken + LBRKT + delimitedList(serviceChangePa
 serviceChangeRequest = ServiceChangeToken + EQUAL + TerminationID + LBRKT + serviceChangeDescriptor + RBRKT
 
 notifyRequest = NotifyToken + EQUAL + TerminationID + LBRKT + observedEventsDescriptor + Optional(Literal(",")+errorDescriptor) + RBRKT
-commandRequest = ammRequest | subtractRequest | auditRequest | notifyRequest | serviceChangeRequest
-commandRequestList = delimitedList(Optional(Literal("O-")) + Optional(Literal("W-")) + commandRequest)("commandRequestList")
+commandRequest = (ammRequest | subtractRequest | auditRequest | notifyRequest | serviceChangeRequest).setResultsName("commandRequest").setParseAction(commandRequestAction)
+commandRequestList = (delimitedList(Optional(Literal("O-")) + Optional(Literal("W-")) + commandRequest)).setResultsName("commandRequestList",listAllMatches=True).setParseAction(commandRequestListAction)
 
 packagesDescriptor = PackagesToken + LBRKT + delimitedList(packagesItem) + RBRKT
 statisticsParameter = pkgdName + Optional((EQUAL + VALUE) | (LSBRKT + delimitedList(VALUE) + RSBRKT))
@@ -343,12 +344,12 @@ indAudcontextAttrDescriptor = ContextAttrToken + LBRKT + delimitedList(contextAu
 
 contextAudit = ContextAuditToken + LBRKT + (delimitedList(contextAuditProperties) | indAudcontextAttrDescriptor ) + RBRKT
 contextRequest = contextAudit | (contextProperties + Optional(Literal(",") + contextAudit))
-actionRequest = Group((CtxToken + EQUAL + ContextID("contextId") + LBRKT + ((contextRequest + Optional(Literal(",") + commandRequestList)) | commandRequestList) + RBRKT))
+actionRequest = (CtxToken + EQUAL + ContextID + LBRKT + ((contextRequest + Optional(Literal(",") + commandRequestList)) | commandRequestList) + RBRKT).setResultsName("actionRequest", listAllMatches=True).setParseAction(actionRequestAction)
 
 transactionPending = PendingToken + EQUAL + TransactionID + LBRKT + RBRKT
 transactionAck = TransactionID | (TransactionID + Literal("-") + TransactionID)
 transactionResponseAck = ResponseAckToken + LBRKT + delimitedList(transactionAck) + RBRKT
-transactionRequest = (TransToken + EQUAL + TransactionID("requestId") + LBRKT + delimitedList(actionRequest) + RBRKT)("transactionRequest")
+transactionRequest = (TransToken + EQUAL + TransactionID + LBRKT + delimitedList((actionRequest)) + RBRKT)
 
 
 commandReplys = serviceChangeReply | auditReply | ammsReply | notifyReply
@@ -360,7 +361,7 @@ actionReplyList = delimitedList(actionReply)
 segmentNumber = Word(nums,max=16)
 segmentReply = MessageSegmentToken + EQUAL + TransactionID + SLASH + segmentNumber + Optional(SLASH  + SegmentationCompleteToken)
 transactionReply = ReplyToken + EQUAL + TransactionID("replyId") + Optional(SLASH +segmentNumber + Optional(SLASH + SegmentationCompleteToken)) + LBRKT + Optional(ImmAckRequiredToken + COMMA) + (errorDescriptor | actionReplyList) + RBRKT
-transactionList = OneOrMore(transactionRequest | transactionReply | transactionPending | transactionResponseAck)("transactionList")
+transactionList = OneOrMore(transactionRequest | transactionReply | transactionPending | transactionResponseAck).setResultsName("transactionList",listAllMatches=True)
 messageBody = errorDescriptor | transactionList
 message = MegacopToken + SLASH + (Version)("version") + mId + messageBody
-megacoMessage = Optional(authenticationHeader) + message
+megacoMessage = (Optional(authenticationHeader) + message).setParseAction(megacoMessageAction)

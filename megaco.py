@@ -5,7 +5,7 @@ from Sdp import *
 class Transaction:
     def __init__(self, tran_id, context, **kwargs):
         self.attrs = {}
-        slef.contextList = []
+        self.contextList = []
         self.attrs['tran_id'] = tran_id
         if type(context) is list:
             self.contextList = context
@@ -14,10 +14,16 @@ class Transaction:
         self.attrs.update(kwargs)
 
 
+
 class Context:
-    def __init__(self, contextId, **kwargs):
+    def __init__(self, contextId, terms, **kwargs):
         self.contextId = contextId
         self.termList = []
+
+        if type(terms) is list:
+            self.termList = terms
+        elif isinstance(terms, Termination):
+            self.termList.append(terms)
 
 
 class Command:
@@ -26,10 +32,10 @@ class Command:
 
 
 class Termination:
-    def __init__(self, termId, **kwargs):
+    def __init__(self, termId, commandType, **kwargs):
         self.termId = termId
+        self.commandType = commandType
         self.contextId = None
-        self.commandType = None
         self.descriptorList = []
 
 
