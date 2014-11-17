@@ -13,6 +13,20 @@ class Transaction:
             self.contextList.append(context)
         self.attrs.update(kwargs)
 
+    def get_ctx_term_cmd(self):
+        ctx_term_cmd = []
+        for context in self.contextList:
+            term_cmd = []
+            cid = context.contextId
+            for t in context.termList:
+                print t.termId
+                term_cmd.append((t.termId,t.commandType))
+            ctx_term_cmd.append((cid,term_cmd))
+            print ctx_term_cmd
+            term_cmd = []
+        return ctx_term_cmd
+
+
 
 
 class Context:
@@ -24,6 +38,13 @@ class Context:
             self.termList = terms
         elif isinstance(terms, Termination):
             self.termList.append(terms)
+    @property
+    def contextId(self):
+        return self.contextId
+
+    @property
+    def termList(self):
+        return self.termList
 
 
 class Command:

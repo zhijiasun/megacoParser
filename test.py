@@ -66,13 +66,20 @@ if __name__ == "__main__":
     test2 = """
     !/1 [10.0.55.41] T=40000572{C=-{O-AV=A1{AT{M }},O-AV=A2{AT{M }}},C=*{O-AV=A1{AT{M }},O-AV=A2{AT{M }}}}
     """
+    test3 = """
+    MEGACO/1 [20.8.1.204]:2944 Transaction=410950{Context=-{ServiceChange=ROOT{Services{Method=Restart,Reason="901 Cold Boot",ServiceChangeAddress=2944,Profile=AGW/1,Version=2,20121025T15230101}}}}
+    """
+    test4 = """
+    !/1 [10.0.55.41] T=39991301{C=-{MF=AL9{E=589829{al/of{strict=exact,EM{SG{cg/dt},E=393217{dd/ce{ DM=shanghai1},al/on{strict=exact},g/sc}}},al/on{strict=exact}}}}}
+    """
     # print actionReply.parseString(test2)
-    result =  megacoMessage.parseString(test2)
-    transactionListNum = len(result["transactionList"])
-    actionRequestNum = len(result["actionRequest"])
-    commandRequestListNum = len(result["commandRequestList"])
-    print transactionListNum,actionRequestNum,commandRequestListNum
-    print transactionList
+    result =  megacoMessage.parseString(test4)
+    # transactionListNum = len(result["transactionList"])
+    # actionRequestNum = len(result["actionRequest"])
+    # commandRequestListNum = len(result["commandRequestList"])
+    # print transactionListNum,actionRequestNum,commandRequestListNum
+    for t in transactionList:
+        print t.get_ctx_term_cmd()
 
     # for i in range(transactionListNum):
     #     transactionList_temp = result["transactionList"][i]

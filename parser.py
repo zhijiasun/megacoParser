@@ -304,7 +304,7 @@ serviceChangeMethod = MethodToken + EQUAL + (FailoverToken | ForcedToken | Grace
 serviceChangeParm = serviceChangeMethod | serviceChangeReason | serviceChangeDelay | serviceChangeAddress | serviceChangeProfile | \
                     extension | TimeStamp | serviceChangeMgcId | serviceChangeVersion | ServiceChangeIncompleteToken | auditItem
 serviceChangeDescriptor  = ServicesToken + LBRKT + delimitedList(serviceChangeParm) + RBRKT
-serviceChangeRequest = ServiceChangeToken + EQUAL + TerminationID + LBRKT + serviceChangeDescriptor + RBRKT
+serviceChangeRequest = ServiceChangeToken("commandType") + EQUAL + TerminationID + LBRKT + serviceChangeDescriptor + RBRKT
 
 notifyRequest = NotifyToken + EQUAL + TerminationID + LBRKT + observedEventsDescriptor + Optional(Literal(",")+errorDescriptor) + RBRKT
 commandRequest = (ammRequest | subtractRequest | auditRequest | notifyRequest | serviceChangeRequest).setResultsName("commandRequest").setParseAction(commandRequestAction)
@@ -360,7 +360,7 @@ actionReply = CtxToken + EQUAL + ContextID("contextId") + LBRKT + (errorDescript
 actionReplyList = delimitedList(actionReply)
 segmentNumber = Word(nums,max=16)
 segmentReply = MessageSegmentToken + EQUAL + TransactionID + SLASH + segmentNumber + Optional(SLASH  + SegmentationCompleteToken)
-transactionReply = ReplyToken + EQUAL + TransactionID("replyId") + Optional(SLASH +segmentNumber + Optional(SLASH + SegmentationCompleteToken)) + LBRKT + Optional(ImmAckRequiredToken + COMMA) + (errorDescriptor | actionReplyList) + RBRKT
+transactionReply = ReplyToken + EQUAL + TransactionID + Optional(SLASH +segmentNumber + Optional(SLASH + SegmentationCompleteToken)) + LBRKT + Optional(ImmAckRequiredToken + COMMA) + (errorDescriptor | actionReplyList) + RBRKT
 transactionList = OneOrMore(transactionRequest | transactionReply | transactionPending | transactionResponseAck).setResultsName("transactionList",listAllMatches=True)
 messageBody = errorDescriptor | transactionList
 message = MegacopToken + SLASH + (Version)("version") + mId + messageBody

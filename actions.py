@@ -9,9 +9,14 @@ def commandRequestListAction(tokens):
     print "commandRequestList"
 
 def actionRequestAction(tokens):
+    global termList
     print "actionRequest"
+    print "&&&&&&&&&&"
+    print contextList, termList
+    print "&&&&&&&&&&"
     context = Context(tokens["ContextID"],termList)
     contextList.append(context)
+    termList = []
 
 
 def commandRequestAction(tokens):
